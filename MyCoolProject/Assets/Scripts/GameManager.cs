@@ -2,11 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.AI;
 using System;
 using TMPro;
 
 public class GameManager : MonoBehaviour
 {
+    public GameObject enemies;
+    public Vector3 tempPos;
     [Header("Game Variables")]
     public PlayerController player;
     public float time;
@@ -21,9 +24,18 @@ public class GameManager : MonoBehaviour
     public TMP_Text countdownText;
     public int countdown;
 
+    [Header("End Screen UI")]
+    public TMP_Text endUI_score;
+    public TMP_Text endUI_time;
+
     [Header("Screens")]
     public GameObject countdownUI;
     public GameObject gameUI;
+    public GameObject endUI;
+
+    [Header("Audio")]
+    public AudioSource source;
+    public AudioClip yippee;
 
     // Start is called before the first frame update
     void Start()
@@ -36,6 +48,9 @@ public class GameManager : MonoBehaviour
         // disable player movement initially
         player.enabled = false;
 
+        tempPos = enemies.transform.position;
+        enemies.SetActive(false);
+        
         // set screen to the countdown
         SetScreen(countdownUI);
 
@@ -59,6 +74,8 @@ public class GameManager : MonoBehaviour
 
         //enable player movement
         player.enabled = true;
+        enemies.SetActive(true);
+        enemies.transform.position = tempPos;
 
         //start the game
         startGame();
@@ -80,6 +97,24 @@ public class GameManager : MonoBehaviour
 
         // disable player movement
         player.enabled = false;
+
+        // set the UI to display your stats
+        endUI_score.text = "Score: " + player.coinCount;
+        endUI_time.text = "Time: " + (time * 10).ToString("F2");
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        SetScreen(endUI);
+
+        source.clip = yippee;
+        source.Play();
+    }
+
+    public void OnRestartButton()
+    {
+        // restart the scene to play again
+        SceneManager.LoadScene(0);
     }
 
     // Update is called once per frame
@@ -102,6 +137,7 @@ public class GameManager : MonoBehaviour
         //disable all other screens
         gameUI.SetActive(false);
         countdownUI.SetActive(false);
+        endUI.SetActive(false);
 
         //activate the requested screen
         screen.SetActive(true);
